@@ -1,5 +1,3 @@
-# Название сценария
+# Поставка данных из очереди Yandex Data Streams в Yandex Managed Service for ClickHouse® с помощью Yandex Data Transfer
 
-Описание сценария и инструкция по его применению.
-
-Для практических руководств обязательна ссылка на документацию.
+С помощью сервиса [Data Transfer](https://cloud.yandex.ru/docs/data-transfer) вы можете поставлять данные из потока [Data Streams](https://cloud.yandex.ru/docs/data-streams) в кластер [Managed Service for ClickHouse®](https://cloud.yandex.ru/docs/managed-clickhouse). Настройка через Terraform описана в [практическом руководстве](https://cloud.yandex.ru/docs/data-transfer/tutorials/yds-to-clickhouse), необходимый для настройки конфигурационный файл [data-transfer-yds-mch.tf](data-transfer-yds-mch.tf) расположен в этом репозитории.
