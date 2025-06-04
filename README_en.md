@@ -1,0 +1,3 @@
+# Delivering data from a Yandex Data Streams queue to Yandex Managed Service for ClickHouse® through Yandex Data Transfer
+
+With [Data Transfer](https://yandex.cloud/docs/data-transfer), you can deliver data from a [Data Streams](https://yandex.cloud/docs/data-streams) stream to a [Managed Service for ClickHouse®](https://yandex.cloud/docs/managed-clickhouse) cluster. See [this tutorial](https://yandex.cloud/docs/data-transfer/tutorials/yds-to-clickhouse) to learn how to set up the solution with Terraform. This repository contains the configuration file you will need: [data-transfer-yds-mch.tf](data-transfer-yds-mch.tf).
