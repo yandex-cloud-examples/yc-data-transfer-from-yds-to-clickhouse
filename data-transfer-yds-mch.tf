@@ -22,7 +22,7 @@ locals {
   transfer_enabled   = 0  # Value '0' disables creating of transfer before the source endpoint is created manually. After that, set to '1' to enable transfer.
 }
 
-resource "yandex_iam_service_account" "sa-yds-obj" {
+resource "yandex_iam_service_account" "sa-yds-mch" {
   description = "Service account for migration from the Data Streams to Managed Service for ClickHouse cluster"
   name        = local.sa_name
 }
@@ -32,12 +32,31 @@ resource "yandex_resourcemanager_folder_iam_binding" "editor" {
   folder_id = local.folder_id
   role      = "editor"
   members = [
-    "serviceAccount:${yandex_iam_service_account.sa-yds-obj.id}",
+    "serviceAccount:${yandex_iam_service_account.sa-yds-mch.id}",
   ]
 }
 
-resource "yandex_ydb_database_serverless" "ydb" {
+resource "yandex_ydb_database_dedicated" "ydb" {
   name = local.source_db_name
+
+  resource_preset_id = "medium"
+
+  location_id = "ru-central1"
+  network_id  = "enp7nmu40ig6k88ifkij"
+  subnet_ids = [
+    "e2l0p8nkc98s0ofh8aq4", "e9bk8uu1lv1sgktjl3h6", "fl8pvfeeqlc4642765vc"
+  ]
+
+  scale_policy {
+    fixed_scale {
+      size = 2
+    }
+  }
+
+  storage_config {
+    group_count     = 1
+    storage_type_id = "ssd"
+  }
 }
 
 resource "yandex_vpc_network" "network" {
@@ -102,22 +121,30 @@ resource "yandex_mdb_clickhouse_cluster" "clickhouse-cluster" {
     assign_public_ip = true # Required for connection from the Internet
   }
 
-  database {
-    name = local.target_db_name
-  }
-
-  user {
-    name     = local.target_user
-    password = local.target_password
-    permission {
-      database_name = local.target_db_name
-    }
+  lifecycle {
+    ignore_changes = [database, user]
   }
 }
 
-resource "yandex_datatransfer_endpoint" "mch-target" {
+resource "yandex_mdb_clickhouse_database" "clickhouse-db" {
+  cluster_id = yandex_mdb_clickhouse_cluster.clickhouse-cluster.id
+  name       = local.target_db_name
+}
+
+resource "yandex_mdb_clickhouse_user" "clickhouse-user" {
+  cluster_id = yandex_mdb_clickhouse_cluster.clickhouse-cluster.id
+  name       = local.target_user
+  password   = local.target_password
+  permission {
+    database_name = yandex_mdb_clickhouse_database.clickhouse-db.name
+  }
+  settings {
+  }
+}
+
+resource "yandex_datatransfer_endpoint" "clickhouse-target" {
   description = "Target endpoint for ClickHouse cluster"
-  name        = "mch-target"
+  name        = "clickhouse-target"
   settings {
     clickhouse_target {
       connection {
@@ -140,6 +167,6 @@ resource "yandex_datatransfer_transfer" "yds-mch-transfer" {
   description = "Transfer from the Data Streams to the Managed Service for ClickHouse cluster"
   name        = "transfer-from-yds-to-mch"
   source_id   = local.source_endpoint_id
-  target_id   = yandex_datatransfer_endpoint.mch-target.id
+  target_id   = yandex_datatransfer_endpoint.clickhouse-target.id
   type        = "INCREMENT_ONLY" # Replication data from the source Data Stream.
 }
