@@ -36,27 +36,8 @@ resource "yandex_resourcemanager_folder_iam_binding" "editor" {
   ]
 }
 
-resource "yandex_ydb_database_dedicated" "ydb" {
+resource "yandex_ydb_database_serverless" "ydb" {
   name = local.source_db_name
-
-  resource_preset_id = "medium"
-
-  location_id = "ru-central1"
-  network_id  = "enp7nmu40ig6k88ifkij"
-  subnet_ids = [
-    "e2l0p8nkc98s0ofh8aq4", "e9bk8uu1lv1sgktjl3h6", "fl8pvfeeqlc4642765vc"
-  ]
-
-  scale_policy {
-    fixed_scale {
-      size = 2
-    }
-  }
-
-  storage_config {
-    group_count     = 1
-    storage_type_id = "ssd"
-  }
 }
 
 resource "yandex_vpc_network" "network" {
