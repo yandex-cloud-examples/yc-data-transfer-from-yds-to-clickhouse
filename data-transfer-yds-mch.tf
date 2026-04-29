@@ -37,7 +37,8 @@ resource "yandex_resourcemanager_folder_iam_binding" "editor" {
 }
 
 resource "yandex_ydb_database_serverless" "ydb" {
-  name = local.source_db_name
+  name        = local.source_db_name
+  location_id = "global"
 }
 
 resource "yandex_vpc_network" "network" {
